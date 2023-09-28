@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.turkcell.spring.starter.entities.Category;
 import com.turkcell.spring.starter.entities.Product;
-import com.turkcell.spring.starter.entities.dtos.CategoryForListingDto;
 import com.turkcell.spring.starter.entities.dtos.product.ProductForDetailDto;
 import com.turkcell.spring.starter.entities.dtos.product.ProductForListingDto;
 import jakarta.transaction.Transactional;
@@ -12,14 +11,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
-
-import javax.xml.transform.Result;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
+    Product findByProductName(String productName);
+    Product findByProductId(int productId);
     @Query(value = "SELECT new com.turkcell.spring.starter.entities.dtos.product.ProductForListingDto(p.productId, p.productName, p.quantityPerUnit, p.unitPrice, p.unitsInStock, p.unitsOnOrder, p.discontinued) FROM Product p")
     List<ProductForListingDto> getProductForListing();
 

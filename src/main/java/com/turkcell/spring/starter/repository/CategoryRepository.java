@@ -2,16 +2,18 @@ package com.turkcell.spring.starter.repository;
 
 import java.util.List;
 import com.turkcell.spring.starter.entities.Category;
-import com.turkcell.spring.starter.entities.dtos.CategoryForListingDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForListingDto;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.repository.query.Param;
 
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     List<Category> findByCategoryNameStartingWith(String categoryName);
     Category findByCategoryName(String categoryName);
-    List<Category> findByCategoryId(int categoryId);
+    Category findByCategoryId(int categoryId);
     List<Category> findByCategoryNameContainingIgnoreCase(String categoryName);
 
 
@@ -38,8 +40,14 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Query(value = "SELECT COUNT(*) FROM categories", nativeQuery = true)
     Integer countCategories();
 
-    @Query(value = "SELECT new com.turkcell.spring.starter.entities.dtos.CategoryForListingDto(c.categoryId, c.categoryName) FROM Category c")
+    @Query(value = "SELECT new com.turkcell.spring.starter.entities.dtos.category.CategoryForListingDto(c.categoryId, c.categoryName) FROM Category c")
     List<CategoryForListingDto> getForListing();
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Category c SET c.categoryName = :categoryName, c.description = :description WHERE c.categoryId = :categoryId")
+    void updateCategoryDto(@Param("categoryId") int categoryId, @Param("categoryName") String categoryName, @Param("description") String description);
+
 
 }
 

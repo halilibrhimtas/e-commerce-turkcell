@@ -4,6 +4,7 @@ import com.turkcell.spring.starter.entities.dtos.product.ProductForAddDto;
 import com.turkcell.spring.starter.entities.dtos.product.ProductForDetailDto;
 import com.turkcell.spring.starter.entities.dtos.product.ProductForListingDto;
 import com.turkcell.spring.starter.entities.dtos.product.ProductForUpdateDto;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,23 +38,15 @@ public class ProductsController {
     }
 
     @PostMapping("add")
-    public ResponseEntity<String> addProductDto(@RequestBody ProductForAddDto productForAddDtoDto) {
-        try {
-            productService.add(productForAddDtoDto);
-            return ResponseEntity.ok("Ürün başarıyla eklendi.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ürün eklenirken bir hata oluştu.");
-        }
+    public ResponseEntity<String> addProductDto(@RequestBody @Valid ProductForAddDto productForAddDtoDto) {
+        productService.add(productForAddDtoDto);
+        return ResponseEntity.ok("Ürün başarıyla eklendi.");
     }
 
     @PostMapping("update")
-    public ResponseEntity<String> updateProductDto(@RequestParam("id") int id, @RequestBody ProductForUpdateDto productForUpdateDto) {
-        try {
-            productService.update(id, productForUpdateDto);
-            return ResponseEntity.ok("Ürün başarıyla güncellendi.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ürün güncellenirken bir hata oluştu.");
-        }
+    public ResponseEntity<String> updateProductDto(@RequestParam("id") int id, @RequestBody @Valid ProductForUpdateDto productForUpdateDto) {
+        productService.update(id, productForUpdateDto);
+        return ResponseEntity.ok("Ürün başarıyla güncellendi.");
     }
 
     @PostMapping("delete")

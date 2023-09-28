@@ -1,7 +1,8 @@
 package com.turkcell.spring.starter.business.abstracts;
 import com.turkcell.spring.starter.entities.Category;
-import com.turkcell.spring.starter.entities.dtos.CategoryForAddDto;
-import com.turkcell.spring.starter.entities.dtos.CategoryForListingDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForAddDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForListingDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForUpdateDto;
 
 import java.util.List;
 
@@ -12,8 +13,8 @@ public interface CategoryService {
 
     void delete(int id);
 
-    void update(int id, CategoryForListingDto categoryForListingDto);
+    void update(int id, CategoryForUpdateDto categoryForUpdateDto);
     List<CategoryForListingDto> getAll();
-    Category getById(int id);
+    List<Category> getById(int id);
 }
 

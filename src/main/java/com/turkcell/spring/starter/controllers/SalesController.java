@@ -1,8 +1,10 @@
 package com.turkcell.spring.starter.controllers;
 import com.turkcell.spring.starter.business.abstracts.SalesService;
-import com.turkcell.spring.starter.business.conceretes.SalesManager;
 import com.turkcell.spring.starter.entities.Sales;
-import com.turkcell.spring.starter.repository.InMemorySalesDal;
+import com.turkcell.spring.starter.entities.dtos.sales.SalesForAddDto;
+import com.turkcell.spring.starter.entities.dtos.sales.SalesForUpdateDto;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,9 +12,13 @@ import java.util.List;
 @RestController
 @RequestMapping("sales")
 public class SalesController {
-    SalesService salesService = new SalesManager(new InMemorySalesDal());
+    private final SalesService salesService;
+    @Autowired
+    public SalesController(SalesService salesService) {
+        this.salesService = salesService;
+    }
 
-    @GetMapping("get")
+    @GetMapping()
     public List<Sales> get(){
         return salesService.getAll();
     }
@@ -23,7 +29,7 @@ public class SalesController {
     }
 
     @PostMapping("add")
-    public void add(@RequestBody Sales sales){
+    public void add(@RequestBody @Valid SalesForAddDto sales){
         salesService.add(sales);
     }
 
@@ -33,8 +39,8 @@ public class SalesController {
     }
 
     @PostMapping("update")
-    public void update(@RequestParam("id") int id, @RequestBody Sales sales){
-        salesService.update(id, sales);
+    public void update(@RequestParam("id") int id, @RequestBody SalesForUpdateDto salesForUpdateDto){
+        salesService.update(id, salesForUpdateDto);
     }
 
 }

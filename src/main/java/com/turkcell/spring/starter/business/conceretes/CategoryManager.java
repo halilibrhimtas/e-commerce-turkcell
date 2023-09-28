@@ -3,8 +3,9 @@ package com.turkcell.spring.starter.business.conceretes;
 import com.turkcell.spring.starter.business.abstracts.CategoryService;
 import com.turkcell.spring.starter.business.exceptions.BusinessException;
 import com.turkcell.spring.starter.entities.Category;
-import com.turkcell.spring.starter.entities.dtos.CategoryForAddDto;
-import com.turkcell.spring.starter.entities.dtos.CategoryForListingDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForAddDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForListingDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForUpdateDto;
 import com.turkcell.spring.starter.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ public class CategoryManager implements CategoryService {
     @Override
     public void add(CategoryForAddDto request) {
         categoryWithSameNameShouldNotExist(request.getCategoryName());
+        categoryNameLengthExceeded(request.getCategoryName(), 20);
         Category category = new Category();
         category.setCategoryName(request.getCategoryName());
         category.setDescription(request.getDescription());
@@ -31,12 +33,15 @@ public class CategoryManager implements CategoryService {
 
     @Override
     public void delete(int id) {
-
+        Category category = categoryRepository.findByCategoryId(id);
+        System.out.println(category);
+        categoryRepository.deleteById(id);
     }
 
     @Override
-    public void update(int id, CategoryForListingDto category) {
-
+    public void update(int id, CategoryForUpdateDto categoryForUpdateDto) {
+        categoryNameMustBeUniqueWhenEditing(categoryForUpdateDto.getCategoryName());
+        categoryRepository.updateCategoryDto(id, categoryForUpdateDto.getCategoryName(), categoryForUpdateDto.getDescription());
     }
 
     @Override
@@ -46,7 +51,7 @@ public class CategoryManager implements CategoryService {
     }
 
     @Override
-    public Category getById(int id) {
+    public List<Category> getById(int id) {
         return null;
     }
 
@@ -56,4 +61,24 @@ public class CategoryManager implements CategoryService {
             throw new BusinessException("Aynı kategori isminden 2 kategori bulunamaz.");
         }
     }
+
+    private void categoryProductLimitExceeded(Category category, int maxProductCount) {
+        if (category.getProducts().size() >= maxProductCount) {
+            throw new BusinessException("Kategoriye ait ürün sayısı maksimum sınırı aştı.");
+        }
+    }
+
+    private void categoryNameLengthExceeded(String categoryName, int maxLength) {
+        if (categoryName.length() > maxLength) {
+            throw new BusinessException("Kategori adı en fazla " + maxLength + " karakter uzunluğunda olmalıdır.");
+        }
+    }
+    private void categoryNameMustBeUniqueWhenEditing(String newCategoryName) {
+        Category existingCategory = categoryRepository.findByCategoryName(newCategoryName);
+        if (existingCategory != null) {
+            throw new BusinessException("Bu isimde bir kategori zaten mevcut, kategori adları benzersiz olmalıdır.");
+        }
+    }
+
+
 }

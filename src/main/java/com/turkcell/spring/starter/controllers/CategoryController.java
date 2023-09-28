@@ -2,8 +2,9 @@ package com.turkcell.spring.starter.controllers;
 
 import com.turkcell.spring.starter.business.abstracts.CategoryService;
 import com.turkcell.spring.starter.entities.Category;
-import com.turkcell.spring.starter.entities.dtos.CategoryForAddDto;
-import com.turkcell.spring.starter.entities.dtos.CategoryForListingDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForAddDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForListingDto;
+import com.turkcell.spring.starter.entities.dtos.category.CategoryForUpdateDto;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -100,6 +101,24 @@ public class CategoryController {
        // categoryRepository.save(category);
         return new ResponseEntity("Kategori eklendi", HttpStatus.CREATED);
     }
+
+    @PostMapping("update")
+    public ResponseEntity update(@RequestParam("id") int id, @RequestBody @Valid CategoryForUpdateDto categoryForUpdateDto){
+        categoryService.update(id, categoryForUpdateDto);
+        // categoryRepository.save(category);
+        return new ResponseEntity("Kategori güncellendi", HttpStatus.CREATED);
+    }
+
+    @PostMapping("delete")
+    public ResponseEntity<String> deleteCategoryDto(@RequestParam("id") int id) {
+        try {
+            categoryService.delete(id);
+            return ResponseEntity.ok("Category başarıyla silindi.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Category silinirken bir hata oluştu.");
+        }
+    }
+
 
     // PostgreSQL kurulumu
     // Northwind kurulumu

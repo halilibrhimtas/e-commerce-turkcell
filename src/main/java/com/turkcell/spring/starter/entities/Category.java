@@ -12,6 +12,7 @@ import java.util.List;
 @Entity
 public class Category {
     @Id
+    @GeneratedValue
     @Column(name="category_id")
     private int categoryId;
 
