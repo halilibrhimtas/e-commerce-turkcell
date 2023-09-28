@@ -1,0 +1,16 @@
+starter validation ekledik
+
+validasyonlar, dtolara yazılır.
+
+Never Trust User Input
+
+Backend Validation is mandatory, Frontend validation is a plus.
+
+@NotBlank() added.
+
+
+Global Exception Handling
+
+runtime exception, compile time exception
+
+Application.java -> RestControllerAdvice

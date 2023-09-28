@@ -1,0 +1,114 @@
+--> jpa ve postgresql driverlarını dependency olarak pom.xml dosyasına ekledik.
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+--> application.properties dosyasına veritabanına bağlanmak için gerekli olan kodları ekledik
+
+    spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+    spring.jpa.hibernate.ddl-auto=update
+    spring.jpa.hibernate.show-sql=true
+    spring.jpa.properties.javax.persistence.validation.mode = none
+
+    # PostgreSql'e baglanti => burada postgres database ismidir.
+    spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+    spring.datasource.username=postgres
+    spring.datasource.password=123456
+
+--> Oluşturduğumuzz modelleri veritabanındaki veri tablosundaki başlıklar ile aynı olacak şekilde güncelledik.
+    örnek olarak tabloda isim "product_id" ise modelimizde "productId" olarak yazdık.
+    public class Product {
+        private String productId;
+        private String productName;
+        private String supplierId;
+        private String categoryId;
+        private String quantityPerUnit;
+        private double unitPrice;
+        private int unitsInStock;
+        private int unitsOnOrder;
+        private int reorderLevel;
+        private boolean discontinued;
+    }
+
+--> Modelimizin hangi veri tablosuna denk geldiğini belirtmek için "Table" ifadesini ekledik.
+        import jakarta.persistence.Entity;
+        import jakarta.persistence.Table;
+        import lombok.Getter;
+        import lombok.Setter;
+
+        @Getter
+        @Setter
+        @Table(name = "products")
+        @Entity
+        public class Product {
+            private String productId;
+            private String productName;
+            private String supplierId;
+            private String categoryId;
+            private String quantityPerUnit;
+            private double unitPrice;
+            private int unitsInStock;
+            private int unitsOnOrder;
+            private int reorderLevel;
+            private boolean discontinued;
+        }
+
+--> Tabloyu ekledikten sonra, tablodaki her column'ın hangi değişkene denk geldiğini belirtmemiz gerekiyor
+        @Getter
+        @Setter
+        @Table(name = "products")
+        @Entity
+        public class Product {
+
+            @Column(name = "product_id")
+            private String productId;
+
+            @Column(name = "product_name")
+            private String productName;
+
+            @Column(name = "supplier_id")
+            private String supplierId;
+
+            @Column(name = "category_id")
+            private String categoryId;
+
+            @Column(name = "quantity_per_unit")
+            private String quantityPerUnit;
+
+            @Column(name = "unit_price")
+            private double unitPrice;
+
+            @Column(name = "units_in_stock")
+            private int unitsInStock;
+
+            @Column(name = "units_on_order")
+            private int unitsOnOrder;
+
+            @Column(name = "reorderLevel")
+            private int reorderLevel;
+
+            @Column(name = "discontinued")
+            private boolean discontinued;
+        }
+
+--> Şimdi product repository'i düzenleyelim. Daha öncesinde ismi ProoductDal şeklindeydi. Bu interface'in ismini
+productRepository olarak değiştirdik ve JpaRepository'den extends ettik.
+
+    public interface ProductRepository extends JpaRepository<Product, String> {}
+
+    --> Burada string, product id'nin veri tipini belirtmekte.
+
+
+--> Autowired ile bağımlılıkların çözümlenmesi işlemini yapıyor. Otomatik.
+
+        @Autowired
+        public ProductsController(ProductRepository productRepository) {
+            this.productRepository = productRepository;
+        }
