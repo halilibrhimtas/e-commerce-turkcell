@@ -5,13 +5,12 @@ import com.turkcell.spring.starter.entities.Sales;
 
 import java.util.List;
 
-public class SalesServiceImpl implements SalesService {
+public class SalesManager implements SalesService {
     SalesDal salesDal;
 
-    public SalesServiceImpl(SalesDal salesDal) {
+    public SalesManager(SalesDal salesDal) {
         this.salesDal = salesDal;
     }
-
 
     @Override
     public void add(Sales sales) {

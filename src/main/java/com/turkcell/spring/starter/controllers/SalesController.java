@@ -1,6 +1,6 @@
 package com.turkcell.spring.starter.controllers;
 import com.turkcell.spring.starter.business.abstracts.SalesService;
-import com.turkcell.spring.starter.business.conceretes.SalesServiceImpl;
+import com.turkcell.spring.starter.business.conceretes.SalesManager;
 import com.turkcell.spring.starter.entities.Sales;
 import com.turkcell.spring.starter.repository.InMemorySalesDal;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping("sales")
 public class SalesController {
-    SalesService salesService = new SalesServiceImpl(new InMemorySalesDal());
+    SalesService salesService = new SalesManager(new InMemorySalesDal());
 
     @GetMapping("get")
     public List<Sales> get(){

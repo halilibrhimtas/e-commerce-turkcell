@@ -94,11 +94,9 @@ public class CategoryController {
     }
 
 
-    @PostMapping()
+    @PostMapping("add")
     public ResponseEntity add(@RequestBody @Valid CategoryForAddDto categoryForAddDto){
-        Category category = new Category();
-        category.setCategoryName(categoryForAddDto.getCategoryName());
-        category.setDescription(categoryForAddDto.getDescription());
+        categoryService.add(categoryForAddDto);
        // categoryRepository.save(category);
         return new ResponseEntity("Kategori eklendi", HttpStatus.CREATED);
     }

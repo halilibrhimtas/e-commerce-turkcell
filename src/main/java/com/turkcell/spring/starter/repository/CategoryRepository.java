@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     List<Category> findByCategoryNameStartingWith(String categoryName);
+    Category findByCategoryName(String categoryName);
     List<Category> findByCategoryId(int categoryId);
     List<Category> findByCategoryNameContainingIgnoreCase(String categoryName);
 
