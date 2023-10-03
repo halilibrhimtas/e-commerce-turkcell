@@ -1,5 +1,10 @@
 package com.turkcell.spring.starter.entities.dtos.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.turkcell.spring.starter.entities.Category;
+import com.turkcell.spring.starter.entities.Supplier;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Negative;
 import jakarta.validation.constraints.NotBlank;
@@ -25,4 +30,6 @@ public class ProductForUpdateDto {
     private double unitPrice;
     private int unitsInStock;
     private int unitsOnOrder;
+
+
 }

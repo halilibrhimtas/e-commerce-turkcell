@@ -1,9 +1,8 @@
 package com.turkcell.spring.starter.entities.dtos.product;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Negative;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.turkcell.spring.starter.entities.Category;
+import com.turkcell.spring.starter.entities.Supplier;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,10 +22,20 @@ public class ProductForAddDto {
     @Min(10)
     private String quantityPerUnit;
 
-    //@NotBlank(message = "Ürün fiyatı girmek zorunludur.")
+    @NotEmpty(message = "Unit Price değeri boş olamaz")
+    @Min(0)
     private double unitPrice;
 
-    @Min(1)
+    @Min(0)
     private int unitsInStock;
+
     private int unitsOnOrder;
+
+    @Min(1)
+    @NotEmpty(message = "Supplier ID değeri boş olamaz")
+    private int supplierId;
+
+    @Min(1)
+    @NotEmpty(message = "Category ID değeri boş olamaz")
+    private int categoryId;
 }

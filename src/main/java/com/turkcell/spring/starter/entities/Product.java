@@ -23,10 +23,9 @@ public class Product {
     @JsonIgnore
     private Category category;
 
-    /*
     @Column(name = "supplier_id")
     private int supplierId;
-    */
+
     @Column(name = "quantity_per_unit")
     private String quantityPerUnit;
 

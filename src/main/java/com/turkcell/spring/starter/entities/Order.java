@@ -3,15 +3,18 @@ package com.turkcell.spring.starter.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
+import org.hibernate.mapping.Set;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Table(name="orders")
 @Entity
-public class Sales {
+public class Order {
     @Id
     @GeneratedValue
-    @Column(name="order_id")
+    @Column(name="order_id", nullable = false,unique = true)
     private int orderId;
 
     @Column(name = "order_date")
@@ -28,4 +31,7 @@ public class Sales {
 
     @Column(name = "ship_country")
     private String shipCountry;
+
+    @OneToMany(mappedBy = "order")
+    private List<OrderDetails> orderDetailsList = new ArrayList<>();
 }

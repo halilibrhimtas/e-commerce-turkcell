@@ -1,4 +1,4 @@
-package com.turkcell.spring.starter.entities.dtos.sales;
+package com.turkcell.spring.starter.entities.dtos.order;
 
 import jakarta.validation.constraints.Negative;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SalesForUpdateDto {
+public class OrderForUpdateDto {
 
     @Negative
     private double freight;
