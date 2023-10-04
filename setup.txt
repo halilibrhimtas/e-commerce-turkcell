@@ -1,114 +1,197 @@
---> jpa ve postgresql driverlarını dependency olarak pom.xml dosyasına ekledik.
+----- Category ekleme, silme ve listelenebilme kodları (CategoryManager):
 
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
+            @Override
+            public void add(CategoryForAddDto request) {
+                categoryWithSameNameShouldNotExist(request.getCategoryName());
+                categoryNameLengthExceeded(request.getCategoryName(), 20);
+                Category category = new Category();
+                category.setCategoryName(request.getCategoryName());
+                category.setDescription(request.getDescription());
 
---> application.properties dosyasına veritabanına bağlanmak için gerekli olan kodları ekledik
+                categoryRepository.save(category);
+            }
 
-    spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
-    spring.jpa.hibernate.ddl-auto=update
-    spring.jpa.hibernate.show-sql=true
-    spring.jpa.properties.javax.persistence.validation.mode = none
+             @Override
+              public void delete(int id) {
+                  Category category = categoryRepository.findByCategoryId(id);
+                  System.out.println(category);
+                  categoryRepository.deleteById(id);
+              }
 
-    # PostgreSql'e baglanti => burada postgres database ismidir.
-    spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
-    spring.datasource.username=postgres
-    spring.datasource.password=123456
+                @Override
+                public List<CategoryForListingDto> getAll() {
+                    // DTO => Data Transfer Object
+                    return categoryRepository.getForListing();
+                }
 
---> Oluşturduğumuzz modelleri veritabanındaki veri tablosundaki başlıklar ile aynı olacak şekilde güncelledik.
-    örnek olarak tabloda isim "product_id" ise modelimizde "productId" olarak yazdık.
-    public class Product {
-        private String productId;
-        private String productName;
-        private String supplierId;
-        private String categoryId;
-        private String quantityPerUnit;
-        private double unitPrice;
-        private int unitsInStock;
-        private int unitsOnOrder;
-        private int reorderLevel;
-        private boolean discontinued;
-    }
 
---> Modelimizin hangi veri tablosuna denk geldiğini belirtmek için "Table" ifadesini ekledik.
-        import jakarta.persistence.Entity;
-        import jakarta.persistence.Table;
-        import lombok.Getter;
-        import lombok.Setter;
+-----  Ürün eklerken ve güncellerken aşağıdaki kurallar uygulanmalıdır
+       Ürün ismi 3 haneden kısa olamaz.
+       Supplier id ve category id boş geçilemez ve 0'dan küçük eşit olamaz
+       Unit Price boş geçilemez ve 0'dan küçük olamaz
+       Stock bilgisi 0dan küçük olamaz
 
         @Getter
         @Setter
-        @Table(name = "products")
-        @Entity
-        public class Product {
-            private String productId;
-            private String productName;
-            private String supplierId;
-            private String categoryId;
-            private String quantityPerUnit;
-            private double unitPrice;
-            private int unitsInStock;
-            private int unitsOnOrder;
-            private int reorderLevel;
-            private boolean discontinued;
-        }
+        @NoArgsConstructor
+        @AllArgsConstructor
+        public class ProductForAddDto {
 
---> Tabloyu ekledikten sonra, tablodaki her column'ın hangi değişkene denk geldiğini belirtmemiz gerekiyor
-        @Getter
-        @Setter
-        @Table(name = "products")
-        @Entity
-        public class Product {
-
-            @Column(name = "product_id")
-            private String productId;
-
-            @Column(name = "product_name")
+            @NotBlank(message = "Ürün adı girmek zorunludur.")
+            @Size(min = 3)
             private String productName;
 
-            @Column(name = "supplier_id")
-            private String supplierId;
-
-            @Column(name = "category_id")
-            private String categoryId;
-
-            @Column(name = "quantity_per_unit")
+            @NotBlank(message = "Ürün sayısı girmek zorunludur.")
+            @Min(10)
             private String quantityPerUnit;
 
-            @Column(name = "unit_price")
+            @NotEmpty(message = "Unit Price değeri boş olamaz")
+            @Min(0)
             private double unitPrice;
 
-            @Column(name = "units_in_stock")
+            @Min(0)
             private int unitsInStock;
 
-            @Column(name = "units_on_order")
             private int unitsOnOrder;
 
-            @Column(name = "reorderLevel")
-            private int reorderLevel;
+            @Min(1)
+            @NotNull(message = "Supplier ID değeri boş olamaz")
+            private int supplierId;
 
-            @Column(name = "discontinued")
-            private boolean discontinued;
+            @Min(1)
+            @NotEmpty(message = "Category ID değeri boş olamaz")
+            private int categoryId;
         }
 
---> Şimdi product repository'i düzenleyelim. Daha öncesinde ismi ProoductDal şeklindeydi. Bu interface'in ismini
-productRepository olarak değiştirdik ve JpaRepository'den extends ettik.
+    ProductManager içerisine eklenen Bussiness Exception -    Birebir aynı isimde ikinci ürün eklenemez :
 
-    public interface ProductRepository extends JpaRepository<Product, String> {}
-
-    --> Burada string, product id'nin veri tipini belirtmekte.
-
-
---> Autowired ile bağımlılıkların çözümlenmesi işlemini yapıyor. Otomatik.
-
-        @Autowired
-        public ProductsController(ProductRepository productRepository) {
-            this.productRepository = productRepository;
+      private void addProductMustHaveUniqueName(String newProductName) {
+            Product existingProduct = productRepository.findByProductName(newProductName);
+            if (existingProduct != null) {
+                throw new BusinessException("Bu isimde bir ürün zaten mevcut, ürün isimleri benzersiz olmalıdır.");
+            }
         }
+
+
+-----  *Uygulamanızda sipariş modülü eklenmeli ve aşağıdaki gibi çalışmalıdır;
+       *Sipariş eklenebilmelidir ve sipariş eklenirken gönderilen ürünler order_details tablosunda tutulmalıdır.
+       *Sipariş eklenirken aşağıdaki kurallar uygulanmalıdır.
+       Customer_ID boş geçilemez ve verilen ID ile db'de bir Customer olması zorunludur.
+       Employee_ID boş geçilemez ve verilen ID ile db'de bir Employee olması zorunludur.
+       Order Date gönderilmemeli kod kısmında otomatik olarak o anın tarihine set edilmelidir.
+       Required Date kullanıcı tarafından gönderilmeli ve o günün tarihinden daha geçmiş bir tarih gönderilmemelidir.
+       Shipped Date başlangıçta null geçilmelidir.
+       Order tablosu için diğer alanlar için bir kural/validation uygulama zorunluluğunuz yoktur.
+
+
+       Order ile OrderDetails arasında order_id'ye göre birden fazla OrderDetails eklemek için ilişkisel bir yapı kurmamız gerekiyor.
+       Ayrıca Employee ile Orders arasında bulunan ilişkisel yapıyı da düzenledim.
+
+
+       Order.class:
+                @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+                private List<OrderDetails> orderDetailsList = new ArrayList<>();
+
+       OrderDetails.class:
+                @ManyToOne
+                @JoinColumn(name = "order_id", insertable=false, updatable=false)
+                private Order order;
+
+       Employee.class:
+                @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+                private List<Order> orders;
+
+       Ayrıca veritabanında ayırt edici özellik olan benzersiz bire orderDetailsId mevcut değildi. Bundan kaynaklı olarak OrderdetailsRepository'de
+       Jpa'yı etkili bir şekilde kullanamıyorduk. Onun için OrderDetails classına OrderDetailsId ekledim
+
+                    @Id
+                    @GeneratedValue(strategy = GenerationType.IDENTITY)
+                    @Column(name = "order_details_id")
+                    private int orderDetailsId;
+
+       Bir diğer yaşadığım sorun ise şu şekilde:
+
+                 "java.lang.StackOverflowError\r\n\tat com.turkcell.spring.starter.entities.OrderDetails.toString(OrderDetails.java:6)\r\n\tat java.base/java.lang.String.valueOf(String.java:4218)\r\n\tat java.base/java.lang.StringBuilder.append(StringBuilder.java:173)\r\n\tat java.base/java.util.AbstractCollection.toString(AbstractCollection.java:457)\r\n\tat org.hibernate.collection.spi.PersistentBag.toString(PersistentBag.java:590)\r\n\tat java.base/java.lang.StringConcatHelper.stringOf(StringConcatHelper.java:453)\r\n\tat com.turkcell.spring.starter.entities.Order.toString(Order.java:9)\r\n\tat java.base/java.lang.StringConcatHelper.stringOf(StringConcatHelper.java:453)\r\n\tat com.turkcell.spring.starter.entities.OrderDetails.toString(OrderDetails.java:6)\r\n\tat java.base/java.lang.String.valueOf(String.java:4218)\r\n\tat java.base/java.lang.StringBuilder.append(StringBuilder.java:173)\r\n\tat java.base/java.util.AbstractCollection.toString(AbstractCollection.java:457)\r\
+
+
+                 Bunun çözümünü araştırdım ve stackoverflow'da  benzer bir sorunu yaşayan birini buldum:
+
+                 https://stackoverflow.com/questions/68698590/error-while-adding-account-details-in-manytomany-relationship-with-customer-in-s
+                 Bu sorunun nedeni, Order ve OrderDetails sınıflarındaki toString metotlarının döngüsel olarak birbirini çağırması şeklinde. Yani Order sınıfı içindeki OrderDetails sınıfını ve OrderDetails sınıfı içindeki Order sınıfını çağırıyor.
+                 Bunun için birbiri ile ilişkisel yapıda bulunan classlara toString metotlarını @override olarak ekledim.
+
+                     @Override
+                     public String toString() {
+                         return "Order{" +
+                                 "orderId=" + orderId +
+                                 ", orderDate='" + orderDate + '\'' +
+                                 ", requiredDate='" + requiredDate + '\'' +
+                                 ", freight=" + freight +
+                                 ", shipCity='" + shipCity + '\'' +
+                                 ", shipCountry='" + shipCountry + '\'' +
+                                 ", customerId='" + customerId + '\'' +
+                                 ", employee=" + employee +
+                                 ", orderDetailsList=" + orderDetailsList +
+                                 '}';
+                     }
+
+                       @Override
+                         public String toString() {
+                             return "OrderDetails{" +
+                                     "orderDetailsId=" + orderDetailsId +
+                                     ", orderId=" + orderId +
+                                     ", productId=" + productId +
+                                     ", unitPrice=" + unitPrice +
+                                     ", quantity=" + quantity +
+                                     ", discount=" + discount +
+                                     '}';
+                         }
+
+                             @Override
+                             public String toString() {
+                                 return "Employee{" +
+                                         "employeeId=" + employeeId +
+                                         ", firstName='" + firstName + '\'' +
+                                         ", lastName='" + lastName + '\'' +
+                                         ", title='" + title + '\'' +
+                                         ", titleOfCourtesy='" + titleOfCourtesy + '\'' +
+                                         ", birthDate='" + birthDate + '\'' +
+                                         ", hireDate='" + hireDate + '\'' +
+                                         ", address='" + address + '\'' +
+                                         ", city='" + city + '\'' +
+                                         ", region='" + region + '\'' +
+                                         ", postalCode='" + postalCode + '\'' +
+                                         ", country='" + country + '\'' +
+                                         ", homePhone='" + homePhone + '\'' +
+                                         ", extension='" + extension + '\'' +
+                                         ", notes='" + notes + '\'' +
+                                         '}';
+                             }
+
+
+       Gerekli işlemleri OrderManager içerisinde gerçekleştirdim.
+
+
+----- *Sipariş eklenirken request içerisine aynı zamanda ürünler adetleri ile birlikte gönderilmelidir.
+      Ürün adeti 0'dan küçük eşit olamaz.
+      Buradaki ürünün unit_price'ı ürün idsi kullanılarak ürünler tablosundan çekilmelidir.
+      Bu ürünler order_details'e atılmalı order_id olarak yeni eklenen order'ın idsi ve diğer alanlara üründen gelen bilgiler girilmelidir (discount'ı 0 alınız)
+      Eğer ilgili üründen talep edilen adet kadar yoksa adet verilebilecek max. stok olarak güncellenmelidir. örn: 5 adet X ürünü istenmiş stokta 3 adet varsa bu tabloya 3 adet yazılmalı.
+      Siparişe eklenen her ürünün stok adeti quantity kadar azaltılmalıdır.
+
+
+      Bunun için ekstra olarak OrderManager'a ProductRepository'i ekledim. ProductRepository içerisine update işlemi için:
+
+              @Transactional
+              @Modifying
+              @Query("UPDATE Product p SET p.unitsInStock = :unitsInStock WHERE p.productId = :productId")
+              void updateUnitsInStock(@Param("productId") int productId, @Param("unitsInStock") int unitsInStock);
+
+      Kodunu ekledim.
+
+----- Siparişler içerisindeki ürünler ve bu ürünlerin isimleriyle birlikte listelenebilmelidir (iki adet join order,order_details,product)
+
+        OrderRepository'de Query oluşturdum:
+
+        @Query("SELECT o.orderId, p.productName, od.quantity FROM Order o INNER JOIN OrderDetails od ON o.orderId = od.orderId INNER JOIN Product p ON od.productId = p.productId")
+        List<Object[]> getOrdersWithProductNames();

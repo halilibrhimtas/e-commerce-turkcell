@@ -15,4 +15,6 @@ public interface OrderService {
     void update(int id, OrderForUpdateDto orderForUpdateDto);
     List<Order> getAll();
     Order getById(int id);
+
+    List<Object[]> getOrdersWithProductNames();
 }

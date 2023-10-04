@@ -18,11 +18,16 @@ public class OrderForAddDto {
 
     @NotBlank(message = "Sipariş tarihi girmelisiniz.")
     @Size(min = 10, max = 10)
-    private String orderDate;
     private String requiredDate;
     private List<OrderDetailsForAddDto> orderDetailsList;
     @Positive
     private double freight;
     private String shipCity;
     private String shipCountry;
+
+    @NotEmpty(message = "Customer ID değeri boş olamaz")
+    private String customerId;
+
+    @NotNull(message = "Employee ID değeri boş olamaz")
+    private int employeeId;
 }

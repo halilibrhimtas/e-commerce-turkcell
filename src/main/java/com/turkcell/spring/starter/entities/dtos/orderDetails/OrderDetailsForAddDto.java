@@ -1,6 +1,7 @@
 package com.turkcell.spring.starter.entities.dtos.orderDetails;
 
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,12 +16,8 @@ public class OrderDetailsForAddDto {
     @Column(name = "product_id")
     private int productId;
 
-    @Column(name = "unit_price")
-    private double unitPrice;
-
+    @Min(1)
     @Column(name = "quantity")
     private int quantity;
 
-    @Column(name = "discount")
-    private double discount;
 }

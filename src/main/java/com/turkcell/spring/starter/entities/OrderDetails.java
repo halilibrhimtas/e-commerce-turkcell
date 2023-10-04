@@ -9,6 +9,14 @@ import lombok.Data;
 public class OrderDetails {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_details_id")
+    private int orderDetailsId;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id", insertable=false, updatable=false)
+    private Order order;
+
     @Column(name="order_id")
     private int orderId;
 
@@ -23,5 +31,15 @@ public class OrderDetails {
 
     @Column(name = "discount")
     private double discount;
-
+    @Override
+    public String toString() {
+        return "OrderDetails{" +
+                "orderDetailsId=" + orderDetailsId +
+                ", orderId=" + orderId +
+                ", productId=" + productId +
+                ", unitPrice=" + unitPrice +
+                ", quantity=" + quantity +
+                ", discount=" + discount +
+                '}';
+    }
 }

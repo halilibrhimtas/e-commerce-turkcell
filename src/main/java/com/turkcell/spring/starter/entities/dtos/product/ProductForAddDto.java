@@ -32,7 +32,7 @@ public class ProductForAddDto {
     private int unitsOnOrder;
 
     @Min(1)
-    @NotEmpty(message = "Supplier ID değeri boş olamaz")
+    @NotNull(message = "Supplier ID değeri boş olamaz")
     private int supplierId;
 
     @Min(1)

@@ -23,6 +23,11 @@ public class OrderController {
         return orderService.getAll();
     }
 
+    @GetMapping("getOrdersWithProductNames")
+    public List<Object[]> getOrdersWithProductNames(){
+        return orderService.getOrdersWithProductNames();
+    }
+
     @GetMapping("getById")
     public Order getById(@RequestParam("id") int id){
         return orderService.getById(id);

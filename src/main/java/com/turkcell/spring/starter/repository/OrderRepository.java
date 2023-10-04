@@ -22,4 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("UPDATE Order s SET s.freight = :freight, s.shipCity = :shipCity, s.shipCountry = :shipCountry WHERE s.orderId = :orderId")
     void updateOrder(@Param("orderId") int orderId, @Param("freight") double freight, @Param("shipCity") String shipCity, @Param("shipCountry") String shipCountry);
 
+
+    @Query("SELECT o.orderId, p.productName, od.quantity FROM Order o INNER JOIN OrderDetails od ON o.orderId = od.orderId INNER JOIN Product p ON od.productId = p.productId")
+    List<Object[]> getOrdersWithProductNames();
 }
