@@ -19,10 +19,9 @@ public class ProductForAddDto {
     private String productName;
 
     @NotBlank(message = "Ürün sayısı girmek zorunludur.")
-    @Min(10)
     private String quantityPerUnit;
 
-    @NotEmpty(message = "Unit Price değeri boş olamaz")
+    @NotNull(message = "Unit Price değeri boş olamaz")
     @Min(0)
     private double unitPrice;
 
@@ -36,6 +35,6 @@ public class ProductForAddDto {
     private int supplierId;
 
     @Min(1)
-    @NotEmpty(message = "Category ID değeri boş olamaz")
+    @NotNull(message = "Category ID değeri boş olamaz")
     private int categoryId;
 }

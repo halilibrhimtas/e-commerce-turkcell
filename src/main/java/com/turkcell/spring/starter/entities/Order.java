@@ -10,7 +10,7 @@ import java.util.List;
 @Table(name="orders")
 @Entity
 public class Order {
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.MERGE)
     private List<OrderDetails> orderDetailsList = new ArrayList<>();
 
     @Id

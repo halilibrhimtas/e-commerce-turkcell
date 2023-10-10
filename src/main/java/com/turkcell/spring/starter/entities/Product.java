@@ -18,7 +18,7 @@ public class Product {
     @Column(name = "product_name")
     private String productName;
 
-    @ManyToOne()
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name="category_id")
     @JsonIgnore
     private Category category;

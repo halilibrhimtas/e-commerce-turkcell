@@ -1,4 +1,4 @@
-package com.turkcell.spring.starter;
+package com.turkcell.spring.starter.core.exceptions;
 
 import com.turkcell.spring.starter.business.exceptions.BusinessException;
 import org.springframework.http.HttpStatus;

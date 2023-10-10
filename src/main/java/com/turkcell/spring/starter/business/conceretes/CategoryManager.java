@@ -7,40 +7,57 @@ import com.turkcell.spring.starter.entities.dtos.category.CategoryForAddDto;
 import com.turkcell.spring.starter.entities.dtos.category.CategoryForListingDto;
 import com.turkcell.spring.starter.entities.dtos.category.CategoryForUpdateDto;
 import com.turkcell.spring.starter.repository.CategoryRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryManager implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ModelMapper modelMapper;
 
-    public CategoryManager(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+    @Autowired
+    private final MessageSource messageSource;
+
 
     @Override
+    @Transactional
     public void add(CategoryForAddDto request) {
+
         categoryWithSameNameShouldNotExist(request.getCategoryName());
+        categoryNameLengthExceeded(request.getCategoryName());
+        /*
         categoryNameLengthExceeded(request.getCategoryName(), 20);
         Category category = new Category();
         category.setCategoryName(request.getCategoryName());
         category.setDescription(request.getDescription());
+        */
+        modelMapper.getConfiguration().setAmbiguityIgnored(true).setMatchingStrategy(MatchingStrategies.STRICT);
 
-        categoryRepository.save(category);
+        Category category1 = modelMapper.map(request, Category.class);
+        categoryRepository.save(category1);
     }
 
     @Override
     public void delete(int id) {
         Category category = categoryRepository.findByCategoryId(id);
+        categoryContainsProducts(category);
         System.out.println(category);
         categoryRepository.deleteById(id);
     }
 
     @Override
     public void update(int id, CategoryForUpdateDto categoryForUpdateDto) {
-        categoryNameMustBeUniqueWhenEditing(categoryForUpdateDto.getCategoryName());
+        categoryWithSameNameShouldNotExist(categoryForUpdateDto.getCategoryName());
         categoryRepository.updateCategoryDto(id, categoryForUpdateDto.getCategoryName(), categoryForUpdateDto.getDescription());
     }
 
@@ -58,27 +75,19 @@ public class CategoryManager implements CategoryService {
     private void categoryWithSameNameShouldNotExist(String categoryName){
         Category categoryWithSameName = categoryRepository.findByCategoryName(categoryName);
         if(categoryWithSameName != null){
-            throw new BusinessException("Aynı kategori isminden 2 kategori bulunamaz.");
+            throw new BusinessException(messageSource.getMessage("categoryWithSameName", new Object[] {categoryName}, LocaleContextHolder.getLocale()));
         }
     }
 
-    private void categoryProductLimitExceeded(Category category, int maxProductCount) {
-        if (category.getProducts().size() >= maxProductCount) {
-            throw new BusinessException("Kategoriye ait ürün sayısı maksimum sınırı aştı.");
+    private void categoryContainsProducts(Category category) {
+        if (!category.getProducts().isEmpty()) {
+            throw new BusinessException(messageSource.getMessage("categoryContainsProducts", new Object[] {category.getCategoryName()}, LocaleContextHolder.getLocale()));
         }
     }
 
-    private void categoryNameLengthExceeded(String categoryName, int maxLength) {
-        if (categoryName.length() > maxLength) {
-            throw new BusinessException("Kategori adı en fazla " + maxLength + " karakter uzunluğunda olmalıdır.");
+    private void categoryNameLengthExceeded(String categoryName) {
+        if (categoryName.length() > 20) {
+            throw new BusinessException(messageSource.getMessage("categoryNameLengthExceeded", new Object[] {categoryName}, LocaleContextHolder.getLocale()));
         }
     }
-    private void categoryNameMustBeUniqueWhenEditing(String newCategoryName) {
-        Category existingCategory = categoryRepository.findByCategoryName(newCategoryName);
-        if (existingCategory != null) {
-            throw new BusinessException("Bu isimde bir kategori zaten mevcut, kategori adları benzersiz olmalıdır.");
-        }
-    }
-
-
 }

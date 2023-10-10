@@ -3,6 +3,9 @@ package com.turkcell.spring.starter.controllers;
 // CTRL + SPACE => Intelissense'i triggerlar
 
 import com.turkcell.spring.starter.entities.Product;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -10,6 +13,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("home")
+@RequiredArgsConstructor
+
 // http://localhost:8080/home
 // http://localhost:8080/home/index
 // http://localhost:8080/home/categories
@@ -22,7 +27,7 @@ import java.util.List;
 // PUT => Bir kaynağın değiştirilmesi isteği durumunda kullanılır. Örn: ürün güncellenmesi.
 // DELETE => Bir kaynağın silinmesi isteği durumunda kullanılır. Örn: ürünün dbden silinmesi.
 public class HomeController {
-
+    MessageSource messageSource;
 
     // http://localhost:8080/home GET İSTEĞİ
     @GetMapping("")
@@ -33,7 +38,7 @@ public class HomeController {
     // http://localhost:8080/home POST İSTEĞİ
     @PostMapping("")
     public String getPost(){
-        return "Merhaba Turkcell Post";
+        return messageSource.getMessage("hello", null, LocaleContextHolder.getLocale());
     }
 
     //http://localhost:8080/home/index

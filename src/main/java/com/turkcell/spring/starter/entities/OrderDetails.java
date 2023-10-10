@@ -13,7 +13,7 @@ public class OrderDetails {
     @Column(name = "order_details_id")
     private int orderDetailsId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "order_id", insertable=false, updatable=false)
     private Order order;
 

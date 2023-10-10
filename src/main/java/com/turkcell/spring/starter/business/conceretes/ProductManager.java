@@ -5,24 +5,32 @@ import com.turkcell.spring.starter.business.exceptions.BusinessException;
 import com.turkcell.spring.starter.entities.Product;
 import com.turkcell.spring.starter.entities.dtos.product.*;
 import com.turkcell.spring.starter.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductManager implements ProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductManager(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+    private final ModelMapper modelMapper;
+
+    private final MessageSource messageSource;
+
 
     @Override
     public void add(ProductForAddDto productForAddDto) {
         addProductMustHaveUniqueName(productForAddDto.getProductName());
 
+        /*
         Product product = new Product();
         product.setProductName(productForAddDto.getProductName());
         product.setQuantityPerUnit(productForAddDto.getQuantityPerUnit());
@@ -30,8 +38,12 @@ public class ProductManager implements ProductService {
         product.setUnitsInStock(productForAddDto.getUnitsInStock());
         product.setUnitsOnOrder(productForAddDto.getUnitsOnOrder());
         product.setDiscontinued(0);
+        */
+        modelMapper.getConfiguration().setAmbiguityIgnored(true).setMatchingStrategy(MatchingStrategies.STRICT);
 
-        productRepository.save(product);
+        Product product1 = modelMapper.map(productForAddDto, Product.class);
+
+        productRepository.save(product1);
     }
 
     @Override
@@ -66,20 +78,20 @@ public class ProductManager implements ProductService {
     private void addProductMustHaveUniqueName(String newProductName) {
         Product existingProduct = productRepository.findByProductName(newProductName);
         if (existingProduct != null) {
-            throw new BusinessException("Bu isimde bir ürün zaten mevcut, ürün isimleri benzersiz olmalıdır.");
+            throw new BusinessException(messageSource.getMessage("addProductMustHaveUniqueName", new Object[] {newProductName}, LocaleContextHolder.getLocale()));
         }
     }
 
     private void updateProductMustExist(int productId) {
         Product existingProduct = productRepository.findByProductId(productId);
         if (existingProduct == null) {
-            throw new BusinessException("Güncellenecek ürün bulunamadı.");
+            throw new BusinessException(messageSource.getMessage("updateProductMustExist", new Object[] {productId}, LocaleContextHolder.getLocale()));
         }
     }
 
     private void updateProductPriceMustBeNonNegative(double newUnitPrice) {
         if (newUnitPrice < 0) {
-            throw new BusinessException("Ürün birim fiyatı güncellemesi negatif olamaz.");
+            throw new BusinessException(messageSource.getMessage("updateProductPriceMustBeNonNegative", new Object[] {newUnitPrice}, LocaleContextHolder.getLocale()));
         }
     }
 
