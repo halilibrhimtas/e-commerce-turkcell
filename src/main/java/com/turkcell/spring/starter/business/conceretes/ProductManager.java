@@ -50,7 +50,6 @@ public class ProductManager implements ProductService {
     public void delete(int id) {
         productRepository.deleteById(id);
     }
-
     @Override
     public void update(int id, ProductForUpdateDto productForUpdateDto) {
         updateProductMustExist(id);
@@ -64,7 +63,6 @@ public class ProductManager implements ProductService {
                 productForUpdateDto.getUnitsOnOrder()
         );
     }
-
     @Override
     public List<ProductForListingDto> getAll() {
         return productRepository.getProductForListing();
@@ -81,19 +79,15 @@ public class ProductManager implements ProductService {
             throw new BusinessException(messageSource.getMessage("addProductMustHaveUniqueName", new Object[] {newProductName}, LocaleContextHolder.getLocale()));
         }
     }
-
     private void updateProductMustExist(int productId) {
         Product existingProduct = productRepository.findByProductId(productId);
         if (existingProduct == null) {
             throw new BusinessException(messageSource.getMessage("updateProductMustExist", new Object[] {productId}, LocaleContextHolder.getLocale()));
         }
     }
-
     private void updateProductPriceMustBeNonNegative(double newUnitPrice) {
         if (newUnitPrice < 0) {
             throw new BusinessException(messageSource.getMessage("updateProductPriceMustBeNonNegative", new Object[] {newUnitPrice}, LocaleContextHolder.getLocale()));
         }
     }
-
-
 }
