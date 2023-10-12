@@ -39,6 +39,7 @@ public class ProductManager implements ProductService {
         product.setUnitsOnOrder(productForAddDto.getUnitsOnOrder());
         product.setDiscontinued(0);
         */
+
         modelMapper.getConfiguration().setAmbiguityIgnored(true).setMatchingStrategy(MatchingStrategies.STRICT);
 
         Product product1 = modelMapper.map(productForAddDto, Product.class);
