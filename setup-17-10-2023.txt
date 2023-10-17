@@ -71,3 +71,4 @@
 --- Veritabanı görüntüsü:
 
     ![](https://raw.githubusercontent.com/halilibrhimtas/e-commerce-turkcell/master/image.png)
+
