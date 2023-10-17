@@ -1,3 +1,5 @@
+v1.0
+
 --- Bir kullanıcının birden fazla role sahip olması için User modeli içerisindeki role paramatresini
     arrayList'e çevirmemiz gerekiyordu. JPA için basic veri türlerinden olmadığı için bir converter aracılığıyla
     bu işlemi gerçekleştirdik.
@@ -70,5 +72,89 @@
 
 --- Veritabanı görüntüsü:
 
-    ![](https://raw.githubusercontent.com/halilibrhimtas/e-commerce-turkcell/master/image.png)
+    https://raw.githubusercontent.com/halilibrhimtas/e-commerce-turkcell/master/image.png
 
+
+v2.0
+
+
+--- roles veritabanı oluşturuldu:
+
+    CREATE TABLE roles (
+        role_id INT AUTO_INCREMENT PRIMARY KEY,
+        role_name VARCHAR(255) NOT NULL
+    );
+
+    INSERT INTO roles (role_name) VALUES ('admin');
+    INSERT INTO roles (role_name) VALUES ('user');
+    INSERT INTO roles (role_name) VALUES ('editor');
+    INSERT INTO roles (role_name) VALUES ('guest');
+
+--- Kullanıcıdan role_id_list istendi (uı tarafında admin, user, editor, guest arasından seçtikleri varsayılır)
+
+    @AllArgsConstructor
+    @Data
+    @Builder
+    @NoArgsConstructor
+    public class RegisterRequest {
+        private String username;
+        private String password;
+        private String name;
+        private String lastName;
+        private List<Integer> userRoleIdList;
+    }
+
+--- UserRole.class:
+
+    @Data
+    @Entity
+    @Table(name = "roles")
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public class UserRole {
+
+        @Id
+        @Column(name = "role_id")
+        @GeneratedValue()
+        private int roleId;
+
+        @Column(name = "role_name")
+        private String roleName;
+    }
+
+--- UserRoleRepository.class
+
+    public interface UserRoleRepository  extends JpaRepository<UserRole, Integer> {
+
+        Optional<UserRole> findByRoleId(Integer integer);
+
+    }
+
+
+--- AuthManage.class'da register fonksiyonunun güncellenmiş hali:
+
+    @Override
+        public AuthenticationResponse register(RegisterRequest request) {
+            List<String> roles = new ArrayList<>();
+
+            for (Integer roleId : request.getUserRoleIdList()){
+                UserRole userRole = userRoleRepository.findByRoleId(roleId);
+                roles.add(userRole.getRoleName());
+            }
+
+            User user = User.builder().name(request.getName()).lastName(request.getLastName()).roles(roles).username(request.getUsername()).password(passwordEncoder.encode(request.getPassword())).build();
+            userRepository.save(user);
+            String token = jwtService.generateToken(user);
+            return new AuthenticationResponse(token);
+        }
+
+--- SecurityConfiguration güncellenmiş hali get ve post işlemlerinde yetki dağılımı yapılmış hali:
+
+                   .requestMatchers(HttpMethod.GET, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin", "user", "guest")
+                   .requestMatchers(HttpMethod.POST, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin","admin","editor")
+
+--- Veritabanı görüntüleri:
+
+    https://github.com/halilibrhimtas/e-commerce-turkcell/assets/74383996/4fa670d2-5222-4061-bd68-348c016883c6
+    https://github.com/halilibrhimtas/e-commerce-turkcell/assets/74383996/26e7da0f-f38b-49e7-b40b-3f5d75216426

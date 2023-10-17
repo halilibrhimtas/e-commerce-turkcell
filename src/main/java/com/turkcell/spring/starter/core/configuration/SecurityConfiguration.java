@@ -33,8 +33,8 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
                         .requestMatchers(WHITE_LIST_URLS).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin", "yonetici","musteri", "productOwner")
-                        .requestMatchers(HttpMethod.POST, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin", "developer")
+                        .requestMatchers(HttpMethod.GET, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin", "user", "guest")
+                        .requestMatchers(HttpMethod.POST, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin","admin","editor")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
