@@ -13,6 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class AuthManager implements AuthService {
@@ -24,7 +27,12 @@ public class AuthManager implements AuthService {
 
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
-        User user = User.builder().name(request.getName()).lastName(request.getLastName()).role("USER").username(request.getUsername()).password(passwordEncoder.encode(request.getPassword())).build();
+        List<String> roles = new ArrayList<>();
+        roles.add("yonetici");
+        roles.add("productOwner");
+        roles.add("developer");
+        roles.add("musteri");
+        User user = User.builder().name(request.getName()).lastName(request.getLastName()).roles(roles).username(request.getUsername()).password(passwordEncoder.encode(request.getPassword())).build();
         userRepository.save(user);
         String token = jwtService.generateToken(user);
         return new AuthenticationResponse(token);

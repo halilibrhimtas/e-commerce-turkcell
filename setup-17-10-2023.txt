@@ -1,0 +1,73 @@
+--- Bir kullanıcının birden fazla role sahip olması için User modeli içerisindeki role paramatresini
+    arrayList'e çevirmemiz gerekiyordu. JPA için basic veri türlerinden olmadığı için bir converter aracılığıyla
+    bu işlemi gerçekleştirdik.
+
+    User.class:
+
+        @Convert(converter = StringListConverter.class)
+        private List<String> roles;
+
+        @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                // roller
+                // todo: refactor with multiple roles
+                List<SimpleGrantedAuthority> roleList = new ArrayList<>();
+                for(String role : roles) {
+                    roleList.add(new SimpleGrantedAuthority(role));
+                }
+                return roleList;
+            }
+
+--- converter dosyasını veritabanı işlemleri için oluşturduğumuzdan dolayı repository/converters klasörü içerisinde oluşturduk.
+
+
+    StringListConverter.class:
+
+        public class StringListConverter implements AttributeConverter<List<String>, String> {
+            private static final String SPLIT_CHAR = ";";
+            @Override
+            public String convertToDatabaseColumn(List<String> strings) {
+                return strings != null ? String.join(SPLIT_CHAR, strings) : "";
+            }
+
+            @Override
+            public List<String> convertToEntityAttribute(String s) {
+                return s != null ? Arrays.asList(s.split(SPLIT_CHAR)) : Collections.emptyList();
+            }
+        }
+
+--- AuthManager kısmında ise rolleri bir arrayList halinde ekliyoruz. Ardından veritabanına gönderiyoruz.
+
+      @Override
+        public AuthenticationResponse register(RegisterRequest request) {
+            List<String> roles = new ArrayList<>();
+            roles.add("yonetici");
+            roles.add("productOwner");
+            roles.add("developer");
+            roles.add("musteri");
+            User user = User.builder().name(request.getName()).lastName(request.getLastName()).roles(roles).username(request.getUsername()).password(passwordEncoder.encode(request.getPassword())).build();
+            userRepository.save(user);
+            String token = jwtService.generateToken(user);
+            return new AuthenticationResponse(token);
+        }
+
+--- SecurityConfiguration dosyasındaki GET ve POST işlemleri için rol dağılımı:
+
+            @Bean
+            public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                        .csrf(AbstractHttpConfigurer::disable)
+                        .authorizeHttpRequests(req -> req
+                                .requestMatchers(WHITE_LIST_URLS).permitAll()
+                                .requestMatchers(HttpMethod.GET, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin", "yonetici","musteri","productOwner")
+                                .requestMatchers(HttpMethod.POST, "/categories/**").hasAnyAuthority("Category.Admin", "Global.Admin", "developer")
+                                .anyRequest().authenticated())
+                        .authenticationProvider(authenticationProvider)
+                        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                return http.build();
+            }
+
+--- Veritabanı görüntüsü:
+
+    ![](https://raw.githubusercontent.com/halilibrhimtas/e-commerce-turkcell/master/image.png)

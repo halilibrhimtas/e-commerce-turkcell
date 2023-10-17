@@ -1,5 +1,6 @@
 package com.turkcell.spring.starter.entities;
 
+import com.turkcell.spring.starter.repository.converters.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,13 +31,19 @@ public class User implements UserDetails {
     private String lastName;
     private String username;
     private String password;
-    private String role;
+
+    @Convert(converter = StringListConverter.class)
+    private List<String> roles;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // roller
         // todo: refactor with multiple roles
-        return List.of(new SimpleGrantedAuthority(role));
+        List<SimpleGrantedAuthority> roleList = new ArrayList<>();
+        for(String role : roles) {
+            roleList.add(new SimpleGrantedAuthority(role));
+        }
+        return roleList;
     }
 
     @Override
